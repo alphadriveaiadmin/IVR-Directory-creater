@@ -3,15 +3,40 @@ import streamlit as st
 
 st.set_page_config(page_title="Dealership Directory Formatter", layout="wide")
 
-st.title("📞 Dealership Directory Formatter")
-st.write("Paste your raw JSON below to generate a formatted phone directory list.")
+st.title("📞 IVR Directory Creator")
+st.write("Paste your campaign ID to generate IVR directory")
 
 # --- Input ---
-raw_json = st.text_area("Paste JSON here", height=300)
+    campaign_col, _ = st.columns([1, 3])
+    with campaign_col:
+        campaign_id = st.text_input(
+            "Campaign ID",
+            max_chars=4,
+            placeholder="1234",
+            help="Enter the 4-digit campaign ID for the webhook.",
+        )
 
-if st.button("Generate Directory"):
-    try:
-        data = json.loads(raw_json)
+    raw_json = ""
+
+    if st.button("Generate IVR Directory"):
+        if not campaign_id.strip():
+            error_message = "Please enter a 4-digit campaign ID before generating."
+        elif not campaign_id.isdigit() or len(campaign_id) != 4:
+            error_message = "Campaign ID must be exactly 4 digits."
+        else:
+            try:
+                response = requests.post(
+                    "https://apps.dgaauto.com/virtualAgentData/webhook",
+                    params={"campaign_id": campaign_id},
+                    timeout=15,
+                )
+                response.raise_for_status()
+                if response.headers.get("content-type", "").lower().startswith("application/json"):
+                    raw_json = json.dumps(response.json())
+                else:
+                    raw_json = response.text
+
+                data = json.loads(raw_json)
 
         output_lines = []
 
