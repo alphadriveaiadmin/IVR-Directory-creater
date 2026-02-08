@@ -1,5 +1,6 @@
-import streamlit as st
 import requests
+import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Dealership Directory Formatter", layout="wide")
 
@@ -71,6 +72,16 @@ if st.button("Generate IVR Directory"):
             # --- Combine and show result ---
             formatted_output = "\n".join(output_lines).strip()
             st.text_area("📋 Formatted Directory", formatted_output, height=500)
+            copy_triggered = st.button("📋 Copy to Clipboard")
+            if copy_triggered:
+                components.html(
+                    f"""
+                    <script>
+                    navigator.clipboard.writeText({formatted_output!r});
+                    </script>
+                    """,
+                    height=0,
+                )
             st.download_button(
                 "📥 Download as TXT",
                 data=formatted_output,
